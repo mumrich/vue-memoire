@@ -1,29 +1,64 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from "vue";
+import { useMemoire } from "./memoire";
+
+const { state, update } = useMemoire([
+  {
+    title: "Learn Vue",
+    done: true,
+  },
+  {
+    title: "Use Vue with Immer",
+    done: false,
+  },
+]);
+const newItemTitle = ref("");
+const undo = ref<Function>();
+const redo = ref<Function>();
+
+function onKeyupEnter() {
+  const response = update((items) =>
+    items.push({ title: newItemTitle.value, done: false })
+  );
+  undo.value = response.undo;
+  redo.value = response.redo;
+  newItemTitle.value = "";
+}
+
+function toggleItem(index: number) {
+  update((items) => {
+    items[index].done = !items[index].done;
+  });
+}
 </script>
 
 <template>
-  <div>
-    <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    <img src="/vite.svg" class="logo" alt="Vite logo" />
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <button @click="undo!()">undo</button>
+  <button @click="redo!()">redo</button>
+  <input v-model="newItemTitle" @keyup.enter="onKeyupEnter" />
+  <ul>
+    <li
+      v-for="({ title, done }, index) in state"
+      :key="index"
+      :class="{ done }"
+      @click="toggleItem(index)"
+    >
+      {{ title }}
+    </li>
+  </ul>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
+<style>
+li {
+  cursor: pointer;
+  user-select: none;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+li:hover {
+  color: aqua;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.done {
+  text-decoration: line-through;
 }
 </style>
