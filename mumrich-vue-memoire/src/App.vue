@@ -2,27 +2,19 @@
 import { ref } from "vue";
 import { useMemoire } from "./memoire";
 
-const { state, update } = useMemoire([
-  {
-    title: "Learn Vue",
-    done: true,
-  },
-  {
-    title: "Use Vue with Immer",
-    done: false,
-  },
-]);
+type TodoItemType = {
+  title: string;
+  done: boolean;
+};
+
+const { state, update, undo, redo } = useMemoire<TodoItemType[]>([]);
 const newItemTitle = ref("");
-const undo = ref<Function>();
-const redo = ref<Function>();
 
 function onKeyupEnter() {
-  const response = update((items) =>
-    items.push({ title: newItemTitle.value, done: false })
-  );
-  undo.value = response.undo;
-  redo.value = response.redo;
-  newItemTitle.value = "";
+  if (newItemTitle.value != null && newItemTitle.value !== "") {
+    update((items) => items.push({ title: newItemTitle.value, done: false }));
+    newItemTitle.value = "";
+  }
 }
 
 function toggleItem(index: number) {
@@ -33,9 +25,11 @@ function toggleItem(index: number) {
 </script>
 
 <template>
-  <button @click="undo!()">undo</button>
-  <button @click="redo!()">redo</button>
-  <input v-model="newItemTitle" @keyup.enter="onKeyupEnter" />
+  <p>
+    <button @click="undo()">undo</button>
+    <button @click="redo()">redo</button>
+  </p>
+  <p><input v-model="newItemTitle" @keyup.enter="onKeyupEnter" /></p>
   <ul>
     <li
       v-for="({ title, done }, index) in state"
