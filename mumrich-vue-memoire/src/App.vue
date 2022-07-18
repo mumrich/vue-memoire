@@ -1,28 +1,36 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useMemoire } from "./memoire";
+import { computed } from "@vue/reactivity";
+import { useBroadcastChannel } from "@vueuse/core";
+import { ref } from "vue";
+import { defineMemoire } from "./memoire";
 
 type TodoItemType = {
   title: string;
   done: boolean;
 };
 
-const memoire = useMemoire<{ todos: TodoItemType[] }>({ todos: [] });
+type MemoireState = { todos: TodoItemType[] };
+
+const { post, data } = useBroadcastChannel({
+  name: "vue-memoire",
+});
+
+const memoire = defineMemoire<MemoireState>({ todos: [] }, post, data);
 const newItemTitle = ref("");
-const todos = computed(() => memoire.state.value?.todos);
+const todos = computed(() => memoire.state.value.todos);
 
 function onKeyupEnter() {
   if (newItemTitle.value != null && newItemTitle.value !== "") {
-    memoire.update((state) =>
-      state.todos.push({ title: newItemTitle.value, done: false })
-    );
+    memoire.update((s) => {
+      s.todos.push({ title: newItemTitle.value, done: false });
+    });
     newItemTitle.value = "";
   }
 }
 
 function toggleItem(index: number) {
-  memoire.update((state) => {
-    state.todos[index].done = !state.todos[index].done;
+  memoire.update((s) => {
+    s.todos[index].done = !s.todos[index].done;
   });
 }
 </script>

@@ -1,23 +1,107 @@
-import { Patch } from "immer";
-import { useBroadcastChannel } from "@vueuse/core";
-import Memoire from "./Memoire";
+import { Ref, ref, shallowRef, watch } from "vue";
+import { v4 as uuidv4 } from "uuid";
+import {
+  applyPatches,
+  Draft,
+  enablePatches,
+  Patch,
+  produceWithPatches,
+} from "immer";
+import { popN } from "../helpers/ArrayHelper";
+import { BroadcastMessage } from "./BroadcastMessage";
+import { BroadcastMessageType } from "./BroadcastMessageType";
 
-export interface UseMemoireOptions {
-  namespace?: string;
-}
-
-export interface BroadcastMessagePayloadChanges {
-  changes: Patch[];
-  inverseChanges: Patch[];
-}
-
-export function useMemoire<TState>(
+export function defineMemoire<TState>(
   baseState: TState,
-  options: UseMemoireOptions = {}
+  post?: (message: string) => void,
+  data?: Ref<string>
 ) {
-  const { post, data } = useBroadcastChannel({
-    name: `vue-memoire${options.namespace ? "-" + options.namespace : ""}`,
-  });
+  enablePatches();
 
-  return new Memoire(baseState, post, data);
+  const uid = uuidv4();
+  const state = shallowRef(baseState);
+  const changes = ref<Patch[]>([]);
+  const inverseChanges = ref<Patch[]>([]);
+  const undone = ref<Patch[]>([]);
+  const redoable = ref<Patch[]>([]);
+
+  const postState = () => {
+    if (post) {
+      post(
+        JSON.stringify({
+          payload: state.value,
+          sender: uid,
+          type: BroadcastMessageType.Update,
+        } as BroadcastMessage<TState>)
+      );
+    }
+  };
+
+  const update = (
+    updater: (draftState: Draft<TState>) => void,
+    doPost: boolean = true
+  ) => {
+    const [nextState, patches, inversePatches] = produceWithPatches(
+      state.value,
+      updater
+    );
+
+    state.value = nextState;
+    changes.value.push(...patches);
+    inverseChanges.value.push(...inversePatches);
+    // After we add a change, we can't redo something we have undone before.
+    // It would make undo and redo unpredictable, because there are new changes.
+    undone.value = [];
+    redoable.value = [];
+
+    if (doPost) {
+      postState();
+    }
+  };
+
+  const applyChanges = (patches: Patch[]) => {
+    state.value = applyPatches(state.value, patches);
+    postState();
+  };
+
+  const undo = (maxNbrOfSteps: number = 1) => {
+    const inversePatches = popN(maxNbrOfSteps, inverseChanges.value);
+    const patches = popN(maxNbrOfSteps, changes.value);
+
+    if (inversePatches.length > 0 && patches.length > 0) {
+      undone.value.push(...inversePatches);
+      redoable.value.push(...patches);
+
+      applyChanges(inversePatches);
+    }
+  };
+
+  const redo = (maxNbrOfSteps: number = 1) => {
+    const inversePatches = popN(maxNbrOfSteps, undone.value);
+    const patches = popN(maxNbrOfSteps, redoable.value);
+
+    if (inversePatches.length > 0 && patches.length > 0) {
+      changes.value.push(...patches);
+      inverseChanges.value.push(...inversePatches);
+
+      applyChanges(patches);
+    }
+  };
+
+  if (data) {
+    watch(data, (newData: string) => {
+      const broadcasMessage = JSON.parse(newData) as BroadcastMessage<any>;
+
+      if (
+        broadcasMessage.sender !== uid &&
+        broadcasMessage.type === BroadcastMessageType.Update
+      ) {
+        update((draftState) => {
+          Object.assign(draftState, broadcasMessage.payload);
+        }, false);
+      }
+    });
+  }
+
+  return { state, update, undo, redo };
 }
