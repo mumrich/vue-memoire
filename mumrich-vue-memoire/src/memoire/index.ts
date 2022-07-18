@@ -11,11 +11,12 @@ import { popN } from "../helpers/ArrayHelper";
 import { BroadcastMessage } from "./BroadcastMessage";
 import { BroadcastMessageType } from "./BroadcastMessageType";
 import { useBroadcastChannel } from "@vueuse/core";
+import { computed } from "@vue/reactivity";
 
 export function defineMemoire<TState>(
   baseState: TState,
-  post?: (message: string) => void,
-  data?: Ref<string>
+  post?: (message: BroadcastMessage<TState>) => void,
+  data?: Ref<BroadcastMessage<TState>>
 ) {
   enablePatches();
 
@@ -28,13 +29,11 @@ export function defineMemoire<TState>(
 
   const postState = () => {
     if (post) {
-      post(
-        JSON.stringify({
-          payload: state.value,
-          sender: uid,
-          type: BroadcastMessageType.Update,
-        } as BroadcastMessage<TState>)
-      );
+      post({
+        payload: state.value,
+        sender: uid,
+        type: BroadcastMessageType.Update,
+      });
     }
   };
 
@@ -90,15 +89,13 @@ export function defineMemoire<TState>(
   };
 
   if (data) {
-    watch(data, (newData: string) => {
-      const broadcasMessage = JSON.parse(newData) as BroadcastMessage<any>;
-
+    watch(data, (newData) => {
       if (
-        broadcasMessage.sender !== uid &&
-        broadcasMessage.type === BroadcastMessageType.Update
+        newData.sender !== uid &&
+        newData.type === BroadcastMessageType.Update
       ) {
         update((draftState) => {
-          Object.assign(draftState, broadcasMessage.payload);
+          Object.assign(draftState, newData.payload);
         }, false);
       }
     });
@@ -115,5 +112,18 @@ export function defineMemoireWithBroadcastChannel<TState>(
     name: channelName,
   });
 
-  return defineMemoire(baseState, post, data);
+  const postBroadcastMessage = (message: BroadcastMessage<TState>) => {
+    if (message) {
+      const serializedMessage = JSON.stringify(message);
+      post(serializedMessage);
+    }
+  };
+
+  const remoteData = computed(() => {
+    if (data.value) {
+      return JSON.parse(data.value);
+    }
+  });
+
+  return defineMemoire(baseState, postBroadcastMessage, remoteData);
 }
