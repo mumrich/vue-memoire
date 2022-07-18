@@ -1,66 +1,35 @@
-<script setup lang="ts">
-import { computed } from "@vue/reactivity";
-import { ref } from "vue";
-import { defineMemoireWithBroadcastChannel } from "./memoire";
-
-type TodoItemType = {
-  title: string;
-  done: boolean;
-};
-
-type MemoireState = { todos: TodoItemType[] };
-
-const memoire = defineMemoireWithBroadcastChannel<MemoireState>("vue-memoire", {
-  todos: [],
-});
-const newItemTitle = ref("");
-const todos = computed(() => memoire.state.value.todos);
-
-function onKeyupEnter() {
-  if (newItemTitle.value != null && newItemTitle.value !== "") {
-    memoire.update((s) => {
-      s.todos.push({ title: newItemTitle.value, done: false });
-    });
-    newItemTitle.value = "";
-  }
-}
-
-function toggleItem(index: number) {
-  memoire.update((s) => {
-    s.todos[index].done = !s.todos[index].done;
-  });
-}
-</script>
-
 <template>
-  <p>
-    <button @click="memoire.undo()">undo</button>
-    <button @click="memoire.redo()">redo</button>
-  </p>
-  <p><input v-model="newItemTitle" @keyup.enter="onKeyupEnter" /></p>
-  <ul>
-    <li
-      v-for="({ title, done }, index) in todos"
-      :key="index"
-      :class="{ done }"
-      @click="toggleItem(index)"
+  <h1>Vue Memoire App</h1>
+  <nav>
+    <router-link
+      v-for="routeItem in routeItems"
+      :key="routeItem.url"
+      :to="routeItem.url"
+      >{{ routeItem.title }}</router-link
     >
-      {{ title }}
-    </li>
-  </ul>
+  </nav>
+  <router-view></router-view>
 </template>
 
-<style>
-li {
-  cursor: pointer;
-  user-select: none;
+<script setup lang="ts">
+import { computed } from "vue";
+import { routes } from "./router";
+
+const routeItems = computed(() =>
+  routes.map((rrr) => ({ title: rrr.name ?? rrr.path ?? "??", url: rrr.path }))
+);
+</script>
+
+<style scoped>
+nav {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-items: center;
+  justify-content: space-evenly;
 }
 
-li:hover {
-  color: aqua;
-}
-
-.done {
-  text-decoration: line-through;
+a {
+  margin: 1rem;
 }
 </style>
