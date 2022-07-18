@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from "@vue/reactivity";
-import { useBroadcastChannel } from "@vueuse/core";
 import { ref } from "vue";
-import { defineMemoire } from "./memoire";
+import { defineMemoireWithBroadcastChannel } from "./memoire";
 
 type TodoItemType = {
   title: string;
@@ -11,11 +10,9 @@ type TodoItemType = {
 
 type MemoireState = { todos: TodoItemType[] };
 
-const { post, data } = useBroadcastChannel({
-  name: "vue-memoire",
+const memoire = defineMemoireWithBroadcastChannel<MemoireState>("vue-memoire", {
+  todos: [],
 });
-
-const memoire = defineMemoire<MemoireState>({ todos: [] }, post, data);
 const newItemTitle = ref("");
 const todos = computed(() => memoire.state.value.todos);
 

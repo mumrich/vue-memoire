@@ -10,6 +10,7 @@ import {
 import { popN } from "../helpers/ArrayHelper";
 import { BroadcastMessage } from "./BroadcastMessage";
 import { BroadcastMessageType } from "./BroadcastMessageType";
+import { useBroadcastChannel } from "@vueuse/core";
 
 export function defineMemoire<TState>(
   baseState: TState,
@@ -104,4 +105,15 @@ export function defineMemoire<TState>(
   }
 
   return { state, update, undo, redo };
+}
+
+export function defineMemoireWithBroadcastChannel<TState>(
+  channelName: string,
+  baseState: TState
+) {
+  const { post, data } = useBroadcastChannel({
+    name: channelName,
+  });
+
+  return defineMemoire(baseState, post, data);
 }
