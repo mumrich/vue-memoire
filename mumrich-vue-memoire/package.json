@@ -21,6 +21,7 @@
       "require": "./dist/mumrich-vue-memoire.umd.js"
     }
   },
+  "types": "dist/types/lib.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
