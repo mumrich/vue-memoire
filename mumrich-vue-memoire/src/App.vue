@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useMemoire } from "./memoire";
 
 type TodoItemType = {
@@ -7,32 +7,35 @@ type TodoItemType = {
   done: boolean;
 };
 
-const { state, update, undo, redo } = useMemoire<TodoItemType[]>([]);
+const memoire = useMemoire<{ todos: TodoItemType[] }>({ todos: [] });
 const newItemTitle = ref("");
+const todos = computed(() => memoire.state.value?.todos);
 
 function onKeyupEnter() {
   if (newItemTitle.value != null && newItemTitle.value !== "") {
-    update((items) => items.push({ title: newItemTitle.value, done: false }));
+    memoire.update((state) =>
+      state.todos.push({ title: newItemTitle.value, done: false })
+    );
     newItemTitle.value = "";
   }
 }
 
 function toggleItem(index: number) {
-  update((items) => {
-    items[index].done = !items[index].done;
+  memoire.update((state) => {
+    state.todos[index].done = !state.todos[index].done;
   });
 }
 </script>
 
 <template>
   <p>
-    <button @click="undo()">undo</button>
-    <button @click="redo()">redo</button>
+    <button @click="memoire.undo()">undo</button>
+    <button @click="memoire.redo()">redo</button>
   </p>
   <p><input v-model="newItemTitle" @keyup.enter="onKeyupEnter" /></p>
   <ul>
     <li
-      v-for="({ title, done }, index) in state"
+      v-for="({ title, done }, index) in todos"
       :key="index"
       :class="{ done }"
       @click="toggleItem(index)"
