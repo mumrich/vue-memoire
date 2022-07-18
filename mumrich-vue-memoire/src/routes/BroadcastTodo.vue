@@ -25,21 +25,32 @@ function toggleItem(index: number) {
 
 <template>
   <h2>TODO</h2>
-  <p>
-    <button @click="memoire.undo()">undo</button>
-    <button @click="memoire.redo()">redo</button>
-  </p>
-  <p><input v-model="newItemTitle" @keyup.enter="onKeyupEnter" /></p>
-  <ul>
-    <li
-      v-for="({ title, done }, index) in todos"
-      :key="index"
-      :class="{ done }"
-      @click="toggleItem(index)"
-    >
-      {{ title }}
-    </li>
-  </ul>
+  <div style="display: flex">
+    <div>
+      <p>
+        <button @click="memoire.undo()">undo</button>
+        <button @click="memoire.redo()">redo</button>
+      </p>
+      <p><input v-model="newItemTitle" @keyup.enter="onKeyupEnter" /></p>
+      <ul>
+        <li
+          v-for="({ title, done }, index) in todos"
+          :key="index"
+          :class="{ done }"
+          @click="toggleItem(index)"
+        >
+          {{ title }}
+        </li>
+      </ul>
+    </div>
+    <div>
+      <iframe
+        title="view-only"
+        src="/#/todo-view"
+        style="width: 500px; height: 400px"
+      />
+    </div>
+  </div>
 </template>
 
 <style scoped>
