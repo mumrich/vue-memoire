@@ -1,6 +1,7 @@
 <template>
   <h2>TODO-Reader</h2>
-  <ul>
+  <p>
+    <ul>
     <li
       v-for="({ title, done }, index) in todos"
       :key="index"
@@ -9,6 +10,7 @@
       {{ title }}
     </li>
   </ul>
+  </p>
 </template>
 
 <script setup lang="ts">

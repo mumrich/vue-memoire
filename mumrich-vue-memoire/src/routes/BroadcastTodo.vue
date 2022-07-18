@@ -2,6 +2,7 @@
 import { computed } from "@vue/reactivity";
 import { ref } from "vue";
 import { useBroadcastTodo } from "../broadcast-todo/Todo";
+import BroadcastTodoReaderVue from "./BroadcastTodoReader.vue";
 
 const memoire = useBroadcastTodo();
 const newItemTitle = ref("");
@@ -43,6 +44,7 @@ function toggleItem(index: number) {
         </li>
       </ul>
     </div>
+    <BroadcastTodoReaderVue />
     <div>
       <iframe
         title="view-only"
