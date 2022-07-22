@@ -1,4 +1,4 @@
-import { Ref, ref, shallowRef, watch } from "vue";
+import { Ref, ref, shallowRef, watch, computed } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import {
   applyPatches,
@@ -11,12 +11,11 @@ import { popN } from "../helpers/ArrayHelper";
 import { BroadcastMessage } from "./BroadcastMessage";
 import { BroadcastMessageType } from "./BroadcastMessageType";
 import { useBroadcastChannel } from "@vueuse/core";
-import { computed } from "@vue/reactivity";
 
 export function defineMemoire<TState>(
   baseState: TState,
-  post?: (message: BroadcastMessage<TState>) => void,
-  data?: Ref<BroadcastMessage<TState>>
+  postBroadcastMessage?: (message: BroadcastMessage<TState>) => void,
+  remoteState?: Ref<BroadcastMessage<TState> | null>
 ) {
   enablePatches();
 
@@ -28,8 +27,8 @@ export function defineMemoire<TState>(
   const redoable = ref<Patch[]>([]);
 
   const postState = () => {
-    if (post) {
-      post({
+    if (postBroadcastMessage) {
+      postBroadcastMessage({
         payload: state.value,
         sender: uid,
         type: BroadcastMessageType.Update,
@@ -88,14 +87,15 @@ export function defineMemoire<TState>(
     }
   };
 
-  if (data) {
-    watch(data, (newData) => {
+  if (remoteState) {
+    watch(remoteState, (newState) => {
       if (
-        newData.sender !== uid &&
-        newData.type === BroadcastMessageType.Update
+        newState &&
+        newState.sender !== uid &&
+        newState.type === BroadcastMessageType.Update
       ) {
         update((draftState) => {
-          Object.assign(draftState, newData.payload);
+          Object.assign(draftState, newState.payload);
         }, false);
       }
     });
@@ -119,11 +119,24 @@ export function defineMemoireWithBroadcastChannel<TState>(
     }
   };
 
-  const remoteData = computed(() => {
-    if (data.value) {
-      return JSON.parse(data.value);
-    }
+  const remoteState = computed<BroadcastMessage<TState> | null>(() => {
+    return data.value
+      ? (JSON.parse(data.value) as BroadcastMessage<TState>)
+      : null;
   });
 
-  return defineMemoire(baseState, postBroadcastMessage, remoteData);
+  const { redo, state, undo, update } = defineMemoire(
+    baseState,
+    postBroadcastMessage,
+    remoteState
+  );
+
+  return {
+    redo,
+    state,
+    undo,
+    update,
+    data,
+    remoteState,
+  };
 }
