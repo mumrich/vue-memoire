@@ -1,16 +1,85 @@
-# Vue 3 + TypeScript + Vite
+# mumrich-vue-memoire
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Install
 
-## Recommended IDE Setup
+```bash
+# npm
+npm install -S mumrich-vue-memoire
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+# yarn
+yarn add mumrich-vue-memoire
+```
 
-## Type Support For `.vue` Imports in TS
+## Usage
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+```ts
+// define mémoire
+import { defineMemoire } from "mumrich-vue-memoire";
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+const useMyMemoire = () =>
+  defineMemoire({
+    name: "",
+    hobbies: [],
+  });
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+// use mémoire
+const myMemoire = useMyMemoire();
+
+// read state
+const hobbies = computed(() => myMemoire.state.value.hobbies);
+
+// update state
+myMemoire.update((draftState) => {
+  draftState.hobbies = [...draftState.hobbies, "programming 👌"];
+});
+// => state: { name: "", hobbies: ["programming 👌"] }
+
+// undo last update (if any)
+myMemoire.undo();
+// => state: { name: "", hobbies: [] }
+
+// reapply the last undone upate
+myMemoire.redo();
+// => new state: { name: "", hobbies: ["programming 👌"] }
+```
+
+## Mémoire variations
+
+- `defineMemoire`: the base mémoire implementation providing reacive _state_ and methods for _update_, _undo_ and _redo_.
+- `defineMemoireWithBroadcastChannel`: a distributed mémoire that uses the [BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel). This is usefull if the state should be shared between _windows_, _tabs_ and _iframes_ with the same [origin](https://developer.mozilla.org/en-US/docs/Glossary/Origin).
+
+## Worth knowing
+
+- `state` is based on [immerjs](https://immerjs.github.io/immer/) and cannot directly be mutated. Every change must go through `update`:
+
+  ```ts
+  // this will throw an error
+  myMemoire.state.value.name = "Hannes";
+  ```
+
+- `update`-handler **must** be a function within brackets, due to a requirement from **immerjs**:
+
+  ```ts
+  // this will throw an error
+  myMemoire.update((draftState) => (draftState.name = "Hannes"));
+
+  // this will work
+  myMemoire.update((draftState) => {
+    draftState.name = "Hannes";
+  });
+  ```
+
+- `state` is a [shallowRef](https://vuejs.org/api/reactivity-advanced.html#shallowref).
+- to maintain reactivity, use spreading or assign on arrays and objects:
+
+  ```ts
+  // this update will NOT be detected
+  myMemoire.update((draftState) => {
+    draftState.hobbies.push("cycling");
+  });
+
+  // this update will be detected
+  myMemoire.update((draftState) => {
+    draftState.hobbies = [...draftState.hobbies, "cycling"];
+  });
+  ```
