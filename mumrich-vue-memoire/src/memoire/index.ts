@@ -108,7 +108,7 @@ export function defineMemoireWithBroadcastChannel<TState>(
   channelName: string,
   baseState: TState
 ) {
-  const { post, data } = useBroadcastChannel({
+  const { post, data } = useBroadcastChannel<string, string>({
     name: channelName,
   });
 
