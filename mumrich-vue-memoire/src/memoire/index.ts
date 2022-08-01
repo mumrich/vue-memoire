@@ -12,6 +12,12 @@ import { BroadcastMessage } from "./BroadcastMessage";
 import { BroadcastMessageType } from "./BroadcastMessageType";
 import { useBroadcastChannel } from "@vueuse/core";
 
+/**
+ * The base mémoire implementation providing reacive _state_ and methods for _update_, _undo_ and _redo_.
+ * @param baseState
+ * @param postBroadcastMessage (optional) method that receives a BroadcastMessage on state change.
+ * @param remoteState (optional) reactive (remote) state that will be observed and replaces the current state when changed.
+ */
 export function defineMemoire<TState>(
   baseState: TState,
   postBroadcastMessage?: (message: BroadcastMessage<TState>) => void,
@@ -104,6 +110,11 @@ export function defineMemoire<TState>(
   return { state, update, undo, redo };
 }
 
+/**
+ * A distributed mémoire that uses the [BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel). This is usefull if the state should be shared between _windows_, _tabs_ and _iframes_ with the same [origin](https://developer.mozilla.org/en-US/docs/Glossary/Origin).
+ * @param channelName
+ * @param baseState
+ */
 export function defineMemoireWithBroadcastChannel<TState>(
   channelName: string,
   baseState: TState
