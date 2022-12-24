@@ -18,7 +18,7 @@ import { useBroadcastChannel } from "@vueuse/core";
  * @param postBroadcastMessage (optional) method that receives a BroadcastMessage on state change.
  * @param remoteState (optional) reactive (remote) state that will be observed and replaces the current state when changed.
  */
-export function defineMemoire<TState>(
+export function defineMemoire<TState extends Objectish>(
   baseState: TState,
   postBroadcastMessage?: (message: BroadcastMessage<TState>) => void,
   remoteState?: Ref<BroadcastMessage<TState> | null>
@@ -35,7 +35,7 @@ export function defineMemoire<TState>(
   const postState = () => {
     if (postBroadcastMessage) {
       postBroadcastMessage({
-        payload: state.value,
+        payload: state.value as any, // TODO: workarround for type - proper fix needed!
         sender: uid,
         type: BroadcastMessageType.Update,
       });
@@ -115,7 +115,7 @@ export function defineMemoire<TState>(
  * @param channelName
  * @param baseState
  */
-export function defineMemoireWithBroadcastChannel<TState>(
+export function defineMemoireWithBroadcastChannel<TState extends Objectish>(
   channelName: string,
   baseState: TState
 ) {
