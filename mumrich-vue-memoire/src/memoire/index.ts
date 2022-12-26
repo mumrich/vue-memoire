@@ -1,4 +1,4 @@
-import { Ref, ref, shallowRef, watch, computed } from "vue";
+import { Ref, ref, shallowRef, watch, computed, ShallowRef } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import {
   applyPatches,
@@ -10,7 +10,14 @@ import {
 import { popN } from "../helpers/ArrayHelper";
 import { BroadcastMessage } from "./BroadcastMessage";
 import { BroadcastMessageType } from "./BroadcastMessageType";
-import { useBroadcastChannel } from "@vueuse/core";
+import { refDebounced, useBroadcastChannel } from "@vueuse/core";
+
+type MemoireInstance<T extends object> = {
+  state: ShallowRef<T>;
+  update: (updater: (draftState: Draft<T>) => void, doPost?: boolean) => void;
+  undo: (maxNbrOfSteps?: number) => void;
+  redo: (maxNbrOfSteps?: number) => void;
+};
 
 /**
  * The base mémoire implementation providing reacive _state_ and methods for _update_, _undo_ and _redo_.
@@ -18,11 +25,11 @@ import { useBroadcastChannel } from "@vueuse/core";
  * @param postBroadcastMessage (optional) method that receives a BroadcastMessage on state change.
  * @param remoteState (optional) reactive (remote) state that will be observed and replaces the current state when changed.
  */
-export function defineMemoire<TState extends Objectish>(
+export function defineMemoire<TState extends object>(
   baseState: TState,
   postBroadcastMessage?: (message: BroadcastMessage<TState>) => void,
   remoteState?: Ref<BroadcastMessage<TState> | null>
-) {
+): MemoireInstance<TState> {
   enablePatches();
 
   const uid = uuidv4();
@@ -35,7 +42,7 @@ export function defineMemoire<TState extends Objectish>(
   const postState = () => {
     if (postBroadcastMessage) {
       postBroadcastMessage({
-        payload: state.value as any, // TODO: workarround for type - proper fix needed!
+        payload: state.value as TState,
         sender: uid,
         type: BroadcastMessageType.Update,
       });

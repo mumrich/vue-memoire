@@ -29,11 +29,12 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { formMemoire, computedMemoire } from "../stores/form";
 
 const form = ref<HTMLFormElement>();
 const valid = ref(true);
 
-const name = ref("");
+const name = computedMemoire(formMemoire, "name");
 const email = ref("");
 const select = ref(null);
 const checkbox = ref(false);
