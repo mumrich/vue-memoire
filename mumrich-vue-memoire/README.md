@@ -16,14 +16,11 @@ yarn add mumrich-vue-memoire
 // define mémoire
 import { defineMemoire } from "mumrich-vue-memoire";
 
-const useMyMemoire = () =>
-  defineMemoire({
-    name: "",
-    hobbies: [],
-  });
-
 // use mémoire
-const myMemoire = useMyMemoire();
+const myMemoire = defineMemoire({
+  name: "",
+  hobbies: [],
+});
 
 // read state
 const hobbies = computed(() => myMemoire.state.value.hobbies);
