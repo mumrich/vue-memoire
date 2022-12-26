@@ -14,6 +14,10 @@
   },
   "dependencies": {
     "@mdi/font": "^7.1.96",
+    "@vueuse/core": "^9.9.0",
+    "@vueuse/integrations": "^9.9.0",
+    "focus-trap": "^7.2.0",
+    "idb-keyval": "^6.2.0",
     "immer": "^9.0.16",
     "mumrich-vue-memoire": "^0.1.27",
     "pinia": "^2.0.28",

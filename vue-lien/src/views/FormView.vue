@@ -1,4 +1,12 @@
 <template>
+  <div class="my-3">
+    <v-btn @click="formMemoire.undo()">
+      <v-icon icon="mdi-undo" />
+    </v-btn>
+    <v-btn @click="formMemoire.redo()">
+      <v-icon icon="mdi-redo" />
+    </v-btn>
+  </div>
   <v-form ref="form" v-model="valid" lazy-validation>
     <v-text-field
       v-model="name"
@@ -23,18 +31,29 @@
     />
     <v-btn color="success" class="mr-4" @click="validate"> Validate </v-btn>
     <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn>
-    <v-btn color="warning" @click="resetValidation"> Reset Validation </v-btn>
   </v-form>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { formMemoire, computedMemoire } from "../stores/form";
+import { useFormMemoire, formMemoireStoredObject } from "@/stores/form";
+import { computed, ref } from "vue";
+
+const formMemoire = useFormMemoire();
 
 const form = ref<HTMLFormElement>();
 const valid = ref(true);
 
-const name = computedMemoire(formMemoire, "name");
+// const name = computed({
+//   get: () => formMemoire.state.value.name,
+//   set: (v) =>
+//     formMemoire.update((draftState) => {
+//       draftState.name = v;
+//     }),
+// });
+const name = computed({
+  get: () => formMemoireStoredObject.value.name,
+  set: (v) => (formMemoireStoredObject.value.name = v),
+});
 const email = ref("");
 const select = ref(null);
 const checkbox = ref(false);
@@ -60,9 +79,5 @@ async function validate() {
 
 function reset() {
   form.value!.reset();
-}
-
-function resetValidation() {
-  form.value!.resetValudation();
 }
 </script>
