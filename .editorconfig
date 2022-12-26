@@ -4,6 +4,9 @@ root = true
 [*]
 indent_style = space
 
+[*.vue]
+end_of_line = lf
+
 # Xml files
 [*.xml]
 indent_size = 2

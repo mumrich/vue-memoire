@@ -10,6 +10,7 @@ const drawer = ref<boolean | null>(null);
     <v-navigation-drawer v-model="drawer">
       <v-list>
         <v-list-item to="/" title="Home" />
+        <v-list-item to="/form" title="Form" />
         <v-list-item to="/about" title="About" />
       </v-list>
     </v-navigation-drawer>
@@ -18,7 +19,9 @@ const drawer = ref<boolean | null>(null);
       <v-toolbar-title>Application</v-toolbar-title>
     </v-app-bar>
     <v-main>
-      <RouterView />
+      <v-container>
+        <RouterView />
+      </v-container>
     </v-main>
   </v-app>
 </template>
