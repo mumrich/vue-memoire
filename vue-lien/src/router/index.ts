@@ -11,7 +11,7 @@ const router = createRouter({
     },
     {
       path: "/form-ref-history",
-      name: "Form: naive history",
+      name: "Form: simple history",
       component: () => import("../views/FormRefHistory.vue"),
     },
     {
