@@ -9,17 +9,37 @@ export type ModelType = {
 };
 
 const props = defineProps<{
-  formModel: ModelType;
+  modelValue: ModelType;
 }>();
 const emits = defineEmits<{
-  (e: "update:model", model: ModelType): void;
+  (e: "update:modelValue", model: ModelType): void;
 }>();
 
-const formEl = ref<HTMLFormElement>();
-const formModel = computed({
-  get: () => props.formModel,
-  set: (v) => emits("update:model", v),
+function emitterHelper<T>(propName: keyof ModelType, v: T) {
+  emits("update:modelValue", { ...props.modelValue, [propName]: v });
+}
+
+const name = computed({
+  get: () => props.modelValue.name,
+  set: (v) => emitterHelper("name", v),
 });
+
+const email = computed({
+  get: () => props.modelValue.email,
+  set: (v) => emitterHelper("email", v),
+});
+
+const select = computed({
+  get: () => props.modelValue.select,
+  set: (v) => emitterHelper("select", v),
+});
+
+const checkbox = computed({
+  get: () => props.modelValue.checkbox,
+  set: (v) => emitterHelper("checkbox", v),
+});
+
+const formEl = ref<HTMLFormElement>();
 const valid = ref(true);
 
 const items = ref(["Item 1", "Item 2", "Item 3", "Item 4"]);
@@ -49,27 +69,22 @@ function reset() {
 <template>
   <v-form ref="formEl" v-model="valid" lazy-validation>
     <v-text-field
-      v-model="formModel.name"
+      v-model="name"
       :counter="10"
       :rules="nameRules"
       label="Name"
       required
     />
-    <v-text-field
-      v-model="formModel.email"
-      :rules="emailRules"
-      label="E-mail"
-      required
-    />
+    <v-text-field v-model="email" :rules="emailRules" label="E-mail" required />
     <v-select
-      v-model="formModel.select"
+      v-model="select"
       :items="items"
       :rules="[(v) => !!v || 'Item is required']"
       label="Item"
       required
     />
     <v-checkbox
-      v-model="formModel.checkbox"
+      v-model="checkbox"
       :rules="[(v) => !!v || 'You must agree to continue!']"
       label="Do you agree?"
       required

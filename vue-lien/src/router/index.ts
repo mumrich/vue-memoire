@@ -10,6 +10,11 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: "/form-memoire-volatile",
+      name: "Form: mémoire volatile",
+      component: () => import("../views/FormMemoireVolatile.vue"),
+    },
+    {
       path: "/form-ref-history",
       name: "Form: simple history",
       component: () => import("../views/FormRefHistory.vue"),

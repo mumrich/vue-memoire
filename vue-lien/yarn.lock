@@ -3120,6 +3120,17 @@ muggle-string@^0.1.0:
   resolved "https://registry.yarnpkg.com/muggle-string/-/muggle-string-0.1.0.tgz#1fda8a281c8b27bb8b70466dbc9f27586a8baa6c"
   integrity sha512-Tr1knR3d2mKvvWthlk7202rywKbiOm4rVFLsfAaSIhJ6dt9o47W4S+JMtWhd/PW9Wrdew2/S2fSvhz3E2gkfEg==
 
+mumrich-vue-memoire@^0.1.27:
+  version "0.1.27"
+  resolved "https://registry.yarnpkg.com/mumrich-vue-memoire/-/mumrich-vue-memoire-0.1.27.tgz#d66e4c2fef13e6e72c460d4c82253c95437c5ca8"
+  integrity sha512-HmodiZC8Rlfmox6FMHzSH+pAFeFvdHbv/6FRhAaNTOCXy8PiuQC4pYUsamiBFIqAAp/g4fbva8ZWldEwGfGtdg==
+  dependencies:
+    "@vueuse/core" "^9.9.0"
+    immer "^9.0.16"
+    uuid "^9.0.0"
+    vue "^3.2.45"
+    vue-router "4.1.6"
+
 nanoid@^3.3.4:
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.4.tgz#730b67e3cd09e2deacf03c027c81c9d9dbc5e8ab"
@@ -4111,7 +4122,7 @@ vue-eslint-parser@^9.0.0, vue-eslint-parser@^9.0.1:
     lodash "^4.17.21"
     semver "^7.3.6"
 
-vue-router@^4.1.6:
+vue-router@4.1.6, vue-router@^4.1.6:
   version "4.1.6"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-4.1.6.tgz#b70303737e12b4814578d21d68d21618469375a1"
   integrity sha512-DYWYwsG6xNPmLq/FmZn8Ip+qrhFEzA14EI12MsMgVxvHFDYvlr4NXpVF5hrRH1wVcDP8fGi5F4rxuJSl8/r+EQ==

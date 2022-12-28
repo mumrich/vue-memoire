@@ -4,18 +4,16 @@ import { useRefHistory } from "@vueuse/core";
 import ExampleFormVue from "@/components/ExampleForm.vue";
 import UndoRedoButtonsVue from "@/components/UndoRedoButtons.vue";
 
-const formMemoire = ref({
+const formModel = ref({
   name: "",
   email: "",
   select: null,
   checkbox: false,
 });
-const { history, undo, redo, redoStack, undoStack } = useRefHistory(
-  formMemoire,
-  {
-    deep: true,
-  }
-);
+
+const { history, undo, redo, redoStack, undoStack } = useRefHistory(formModel, {
+  deep: true,
+});
 </script>
 
 <template>
@@ -25,9 +23,7 @@ const { history, undo, redo, redoStack, undoStack } = useRefHistory(
     :undo-count="undoStack.length"
     :undo="undo"
   />
-  <ExampleFormVue v-model:form-model="formMemoire" />
-  <h1>State</h1>
-  <pre>{{ formMemoire }}</pre>
+  <ExampleFormVue v-model="formModel" />
   <h1>History</h1>
   <pre>{{ history }}</pre>
 </template>
