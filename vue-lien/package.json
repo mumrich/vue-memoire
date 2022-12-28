@@ -19,7 +19,6 @@
     "focus-trap": "^7.2.0",
     "idb-keyval": "^6.2.0",
     "immer": "^9.0.16",
-    "mumrich-vue-memoire": "^0.1.27",
     "pinia": "^2.0.28",
     "uuid": "^9.0.0",
     "vue": "^3.2.45",
