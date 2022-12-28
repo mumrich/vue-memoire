@@ -1,15 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useRefHistory } from "@vueuse/core";
-import { useIDBKeyval } from "@vueuse/integrations/useIDBKeyval";
 import ExampleFormVue from "@/components/ExampleForm.vue";
 
-// const formMemoire = useIDBKeyval("form", {
-//   name: "",
-//   email: "",
-//   select: null,
-//   checkbox: false,
-// });
 const formMemoire = ref({
   name: "",
   email: "",

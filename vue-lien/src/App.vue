@@ -9,9 +9,12 @@ const drawer = ref<boolean | null>(null);
   <v-app id="inspire">
     <v-navigation-drawer v-model="drawer">
       <v-list>
-        <v-list-item to="/" title="Home" />
-        <v-list-item to="/form" title="Form" />
-        <v-list-item to="/about" title="About" />
+        <v-list-item
+          v-for="route in $router.getRoutes()"
+          :key="route.path"
+          :to="route.path"
+          :title="route.name?.toString() ?? route.path"
+        />
       </v-list>
     </v-navigation-drawer>
     <v-app-bar>
