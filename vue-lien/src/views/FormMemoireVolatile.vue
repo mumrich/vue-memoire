@@ -1,28 +1,46 @@
 <script lang="ts" setup>
-import ExampleForm from "@/components/ExampleForm.vue";
+import UndoRedoButtonsVue from "@/components/UndoRedoButtons.vue";
 import { useImmer } from "@/stores/vue-immer";
-import { computed, ref, watch, toRaw } from "vue";
-import { defineMemoire } from "mumrich-vue-memoire";
+import { computed } from "vue";
 
 const immer = useImmer({
   name: "asdf",
   email: "",
   select: null,
   checkbox: false,
+  foo: {
+    bar: ":-)",
+  },
 });
 
-const formModel = computed({
-  get: () => immer.state.value,
+const name = computed({
+  get: () => immer.state.value.name,
   set: (v) => {
     immer.$update((draftState) => {
-      Object.assign(draftState, v);
+      draftState.name = v;
+    });
+  },
+});
+
+const bar = computed({
+  get: () => immer.state.value.foo.bar,
+  set: (v) => {
+    immer.$update((draftState) => {
+      draftState.foo.bar = v;
     });
   },
 });
 </script>
 
 <template>
-  <ExampleForm v-model="formModel" />
+  <UndoRedoButtonsVue
+    :redo-count="immer.redoStack.value.length"
+    :redo="immer.$redo"
+    :undo-count="immer.undoStack.value.length"
+    :undo="immer.$undo"
+  />
+  <v-text-field v-model="name" />
+  <v-text-field v-model="bar" />
   <h1>State</h1>
-  <pre>{{ formModel }}</pre>
+  <pre>{{ immer.state }}</pre>
 </template>
