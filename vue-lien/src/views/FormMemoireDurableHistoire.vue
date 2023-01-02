@@ -12,6 +12,7 @@ const memoire = defineMemoire(
     foo: {
       bar: ":-)",
     },
+    names: [] as string[],
   },
   {
     persistenceId: "TEST-PERSIST-STATE+HISTOIRE",
@@ -36,6 +37,21 @@ const bar = computed({
     });
   },
 });
+
+function addName() {
+  memoire.$update((draftState) => {
+    draftState.names.push(draftState.name);
+    draftState.name = "";
+  });
+}
+
+function tryIllegalAction() {
+  try {
+    (memoire.readonlyState.value.name as any) = "Test";
+  } catch (e) {
+    alert(e);
+  }
+}
 </script>
 
 <template>
@@ -47,6 +63,12 @@ const bar = computed({
   />
   <v-text-field v-model="name" />
   <v-text-field v-model="bar" />
+  <p>
+    <v-btn @click="addName">Add</v-btn>
+  </p>
+  <p>
+    <v-btn @click="tryIllegalAction">try illegal action</v-btn>
+  </p>
   <h1>State</h1>
   <pre>{{ memoire.readonlyState }}</pre>
 </template>

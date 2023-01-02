@@ -1,71 +1,80 @@
-# vue-lien
+# mumrich-vue-memoire
 
-This template should help get you started developing with Vue 3 in Vite.
+## Install
 
-## Recommended IDE Setup
+```bash
+# npm
+npm install -S mumrich-vue-memoire
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+# yarn
+yarn add mumrich-vue-memoire
 ```
 
-### Compile and Hot-Reload for Development
+## Usage
 
-```sh
-npm run dev
+### In-Memory Store
+
+```ts
+import { defineMemoire } from "mumrich-vue-memoire";
+
+const myMemoire = defineMemoire({
+  name: "",
+  hobbies: [],
+});
+
+const hobbies = computed(() => myMemoire.state.value.hobbies);
+
+console.log(hobbies); // []
+
+// update state
+myMemoire.update((draftState) => {
+  draftState.hobbies = [...draftState.hobbies, "programming 👌"];
+});
+console.log(hobbies); // ["programming 👌"]
+
+// undo last action
+myMemoire.undo();
+console.log(hobbies); // []
+
+// trying something dirty...
+myMemoire.state.value.hobbies.put("👋"); // Error: Cannot assign to read only property
+
+// redo last action
+myMemoire.redo(); // ["programming 👌"]
 ```
 
-### Type-Check, Compile and Minify for Production
+## Worth knowing
 
-```sh
-npm run build
-```
+- `state` is based on [immerjs](https://immerjs.github.io/immer/) and cannot directly be mutated. Every change must go through `update`:
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+  ```ts
+  // this will throw an error
+  myMemoire.state.value.name = "Hannes";
+  ```
 
-```sh
-npm run test:unit
-```
+- `update`-handler **must** be a function within brackets, due to a requirement from **immerjs**:
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+  ```ts
+  // this will throw an error
+  myMemoire.update((draftState) => (draftState.name = "Hannes"));
 
-```sh
-# Install browsers for the first run
-npx playwright install
+  // this will work
+  myMemoire.update((draftState) => {
+    draftState.name = "Hannes";
+  });
+  ```
 
-# When testing on CI, must build the project first
-npm run build
+- `state` is a [shallowRef](https://vuejs.org/api/reactivity-advanced.html#shallowref).
+- to maintain reactivity, use spreading or assign on arrays and objects:
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+  ```ts
+  // this update will NOT be detected
+  myMemoire.update((draftState) => {
+    draftState.hobbies.push("cycling");
+  });
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+  // this update will be detected
+  myMemoire.update((draftState) => {
+    draftState.hobbies = [...draftState.hobbies, "cycling"];
+  });
+  ```
