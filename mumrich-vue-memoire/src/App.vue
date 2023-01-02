@@ -1,35 +1,36 @@
-<template>
-  <h1>Vue Memoire App</h1>
-  <nav>
-    <router-link
-      v-for="routeItem in routeItems"
-      :key="routeItem.url"
-      :to="routeItem.url"
-      >{{ routeItem.title }}</router-link
-    >
-  </nav>
-  <router-view></router-view>
-</template>
-
 <script setup lang="ts">
-import { computed } from "vue";
-import { routes } from "./router";
+import { computed, ref } from "vue";
+import { RouterView, useRouter, type RouteRecordNormalized } from "vue-router";
 
-const routeItems = computed(() =>
-  routes.map((rrr) => ({ title: rrr.name ?? rrr.path ?? "??", url: rrr.path }))
-);
+const router = useRouter();
+const routes = computed(() => router.getRoutes());
+const drawer = ref<boolean | null>(null);
+
+function getRouteName(route: RouteRecordNormalized) {
+  return route.name?.toString() ?? route.path;
+}
 </script>
 
-<style scoped>
-nav {
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  justify-items: center;
-  justify-content: space-evenly;
-}
-
-a {
-  margin: 1rem;
-}
-</style>
+<template>
+  <v-app id="inspire">
+    <v-navigation-drawer v-model="drawer">
+      <v-list>
+        <v-list-item
+          v-for="route in routes"
+          :key="route.path"
+          :to="route.path"
+          :title="getRouteName(route)"
+        />
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar>
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>My Awesome Application</v-toolbar-title>
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <RouterView />
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
