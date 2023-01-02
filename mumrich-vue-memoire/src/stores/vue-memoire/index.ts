@@ -2,7 +2,7 @@ import {
   computedShallowRefProp,
   pushTo,
   popOf,
-} from "@/helpers/shallowref-helper";
+} from "../../helpers/shallowref-helper";
 import produce, { enablePatches, type Draft, applyPatches } from "immer";
 import { computed } from "vue";
 import type { IMemoireOptions } from "./contracts";
