@@ -15,8 +15,18 @@ const router = createRouter({
       component: () => import("../views/FormMemoireVolatile.vue"),
     },
     {
+      path: "/form-memoire-durable-state",
+      name: "Form: mémoire durable: state",
+      component: () => import("../views/FormMemoireDurableState.vue"),
+    },
+    {
+      path: "/form-memoire-durable-histoire",
+      name: "Form: mémoire durable: histoire",
+      component: () => import("../views/FormMemoireDurableHistoire.vue"),
+    },
+    {
       path: "/form-ref-history",
-      name: "Form: simple history",
+      name: "Form: ref history",
       component: () => import("../views/FormRefHistory.vue"),
     },
     {

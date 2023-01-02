@@ -3,15 +3,20 @@ import UndoRedoButtonsVue from "@/components/UndoRedoButtons.vue";
 import { defineMemoire } from "@/stores/vue-memoire";
 import { computed } from "vue";
 
-const memoire = defineMemoire({
-  name: "asdf",
-  email: "",
-  select: null,
-  checkbox: false,
-  foo: {
-    bar: ":-)",
+const memoire = defineMemoire(
+  {
+    name: "asdf",
+    email: "",
+    select: null,
+    checkbox: false,
+    foo: {
+      bar: ":-)",
+    },
   },
-});
+  {
+    persistenceId: "TEST-PERSIST-STATE-ONLY",
+  }
+);
 
 const name = computed({
   get: () => memoire.readonlyState.value.name,
