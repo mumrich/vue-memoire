@@ -5,8 +5,13 @@ import {
   type Draft,
   type Patch,
 } from "immer";
-import { computed, ref, shallowRef, type Ref, type ShallowRef } from "vue";
+import { computed, shallowRef, type Ref, type ShallowRef } from "vue";
 import { useIDBKeyval } from "@vueuse/integrations/useIDBKeyval";
+import {
+  computedShallowRefProp,
+  popOf,
+  pushTo,
+} from "@/helpers/ShallowRefHelper";
 
 interface IMemoireHistoire {
   changes: Patch[];
@@ -22,7 +27,7 @@ interface IMemoireOptions {
 
 interface IMemoireModel<TState extends object> {
   state: ShallowRef<TState>;
-  histoire: Ref<IMemoireHistoire>;
+  histoire: ShallowRef<IMemoireHistoire>;
 }
 
 function getPersistenceKey(
@@ -56,7 +61,7 @@ function getDefaultHistoireModel(): IMemoireHistoire {
 }
 
 function getInMemoryHistoireRef() {
-  return ref<IMemoireHistoire>(getDefaultHistoireModel());
+  return shallowRef<IMemoireHistoire>(getDefaultHistoireModel());
 }
 
 function getPersistentStateRef<TState extends object>(
@@ -97,7 +102,9 @@ function getStateAndHistoirePersistenceModel<TState extends object>(
 ): IMemoireModel<TState> {
   const key = getPersistenceKey(options.persistenceId, "histoire");
   const val = getDefaultHistoireModel();
-  const histoire = useIDBKeyval(key, val);
+  const histoire = useIDBKeyval(key, val, {
+    shallow: true,
+  });
 
   return {
     state: getPersistentStateRef(baseState, options),
@@ -128,49 +135,56 @@ export function defineMemoire<TState extends object>(
 ) {
   enablePatches();
   const memoireOptions = getCombinedMemoireOptions(options);
-  const model = getModel(baseState, memoireOptions);
-  const readonlyState = computed(() => Object.freeze(model.state.value));
-  const undoStack = computed(() => [...model.histoire.value.undoable]);
-  const redoStack = computed(() => [...model.histoire.value.redoable]);
-  debugger;
+
+  const { histoire, state } = getModel(baseState, memoireOptions);
+
+  const changes = computedShallowRefProp(histoire, "changes");
+  const redoable = computedShallowRefProp(histoire, "redoable");
+  const undoable = computedShallowRefProp(histoire, "undoable");
+  const undone = computedShallowRefProp(histoire, "undone");
+
+  const readonlyState = computed(() => Object.freeze(state.value));
+  const undos = computed(() => undoable.value.length);
+  const redos = computed(() => redoable.value.length);
+
   const $update = (updater: (draft: Draft<TState>) => void) => {
     const nextState = produce(
-      model.state.value,
+      state.value,
       updater,
       (patches, inversePatches) => {
-        model.histoire.value.changes.push(...patches);
-        model.histoire.value.undoable.push(...inversePatches);
+        pushTo(changes, ...patches);
+        pushTo(undoable, ...inversePatches);
       }
     );
     // After we add a change, we can't redo something we have undone before.
     // It would make undo and redo unpredictable, because there are new changes.
-    model.histoire.value.undone = [];
-    model.histoire.value.redoable = [];
+    undone.value = [];
+    redoable.value = [];
 
-    model.state.value = nextState;
+    state.value = nextState;
   };
 
   const $undo = () => {
-    const undoPatch = model.histoire.value.undoable.pop();
-    const redoPatch = model.histoire.value.changes.pop();
+    const undoPatch = popOf(undoable);
+    const redoPatch = popOf(changes);
 
     if (undoPatch && redoPatch) {
-      model.histoire.value.undone.push(undoPatch);
-      model.histoire.value.redoable.push(redoPatch);
+      pushTo(undone, undoPatch);
+      pushTo(redoable, redoPatch);
 
-      model.state.value = applyPatches(model.state.value, [undoPatch]);
+      state.value = applyPatches(state.value, [undoPatch]);
     }
   };
 
   const $redo = () => {
-    const undoPatch = model.histoire.value.undone.pop();
-    const redoPatch = model.histoire.value.redoable.pop();
+    const undoPatch = popOf(undone);
+    const redoPatch = popOf(redoable);
 
     if (undoPatch && redoPatch) {
-      model.histoire.value.changes.push(redoPatch);
-      model.histoire.value.undoable.push(undoPatch);
+      pushTo(changes, redoPatch);
+      pushTo(undoable, undoPatch);
 
-      model.state.value = applyPatches(model.state.value, [redoPatch]);
+      state.value = applyPatches(state.value, [redoPatch]);
     }
   };
 
@@ -179,7 +193,7 @@ export function defineMemoire<TState extends object>(
     $update,
     $undo,
     $redo,
-    undoStack,
-    redoStack,
+    undos,
+    redos,
   };
 }

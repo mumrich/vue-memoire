@@ -39,9 +39,9 @@ const bar = computed({
 
 <template>
   <UndoRedoButtonsVue
-    :redo-count="memoire.redoStack.value.length"
+    :redo-count="memoire.redos.value"
     :redo="memoire.$redo"
-    :undo-count="memoire.undoStack.value.length"
+    :undo-count="memoire.undos.value"
     :undo="memoire.$undo"
   />
   <v-text-field v-model="name" />

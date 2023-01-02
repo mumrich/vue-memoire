@@ -11,17 +11,17 @@ const router = createRouter({
     },
     {
       path: "/form-memoire-volatile",
-      name: "Form: mémoire volatile",
+      name: "Form: mémoire: volatile",
       component: () => import("../views/FormMemoireVolatile.vue"),
     },
     {
       path: "/form-memoire-durable-state",
-      name: "Form: mémoire durable: state",
+      name: "Form: mémoire: 💾",
       component: () => import("../views/FormMemoireDurableState.vue"),
     },
     {
       path: "/form-memoire-durable-histoire",
-      name: "Form: mémoire durable: histoire",
+      name: "Form: mémoire: 💾+🕐",
       component: () => import("../views/FormMemoireDurableHistoire.vue"),
     },
     {
