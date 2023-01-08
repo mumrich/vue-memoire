@@ -12,41 +12,36 @@ yarn add mumrich-vue-memoire
 
 ## Usage
 
+### In-Memory Store
+
 ```ts
-// define mémoire
 import { defineMemoire } from "mumrich-vue-memoire";
 
-const useMyMemoire = () =>
-  defineMemoire({
-    name: "",
-    hobbies: [],
-  });
+const myMemoire = defineMemoire({
+  name: "",
+  hobbies: [],
+});
 
-// use mémoire
-const myMemoire = useMyMemoire();
-
-// read state
 const hobbies = computed(() => myMemoire.state.value.hobbies);
+
+console.log(hobbies); // []
 
 // update state
 myMemoire.update((draftState) => {
   draftState.hobbies = [...draftState.hobbies, "programming 👌"];
 });
-// => state: { name: "", hobbies: ["programming 👌"] }
+console.log(hobbies); // ["programming 👌"]
 
-// undo last update (if any)
+// undo last action
 myMemoire.undo();
-// => state: { name: "", hobbies: [] }
+console.log(hobbies); // []
 
-// reapply the last undone upate
-myMemoire.redo();
-// => new state: { name: "", hobbies: ["programming 👌"] }
+// trying something dirty...
+myMemoire.state.value.hobbies.put("👋"); // Error: Cannot assign to read only property
+
+// redo last action
+myMemoire.redo(); // ["programming 👌"]
 ```
-
-## Mémoire variations
-
-- `defineMemoire`: the base mémoire implementation providing reacive _state_ and methods for _update_, _undo_ and _redo_.
-- `defineMemoireWithBroadcastChannel`: a distributed mémoire that uses the [BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel). This is usefull if the state should be shared between _windows_, _tabs_ and _iframes_ with the same [origin](https://developer.mozilla.org/en-US/docs/Glossary/Origin).
 
 ## Worth knowing
 
