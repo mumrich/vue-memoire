@@ -20,22 +20,11 @@ const memoire = defineMemoire(
   }
 );
 
-const name = computed({
-  get: () => memoire.readonlyState.value.name,
-  set: (v) => {
-    memoire.$update((draftState) => {
-      draftState.name = v;
-    });
-  },
-});
-
+const name = memoire.$writableProp("name");
+const foo = memoire.$writableProp("foo");
 const bar = computed({
-  get: () => memoire.readonlyState.value.foo.bar,
-  set: (v) => {
-    memoire.$update((draftState) => {
-      draftState.foo.bar = v;
-    });
-  },
+  get: () => foo.value.bar,
+  set: (v) => (foo.value = { bar: v }),
 });
 
 function addName() {

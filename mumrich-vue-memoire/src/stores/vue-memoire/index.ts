@@ -8,6 +8,7 @@ import { computed } from "vue";
 import type { IMemoireOptions } from "./contracts";
 import { getModel } from "./helpers/model-helper";
 import { getCombinedMemoireOptions } from "./helpers/options-helper";
+import { prop } from "@/helpers/prop-helper";
 
 /**
  * The base mémoire implementation providing a reactive readonly _state_ and methods for _update_, _undo_ and _redo_.
@@ -73,12 +74,23 @@ export function defineMemoire<TState extends object>(
     }
   };
 
+  function $writableProp<K extends keyof TState>(propName: K) {
+    return computed({
+      get: () => prop(readonlyState.value, propName),
+      set: (v) =>
+        $update((draftState) => {
+          Object.assign(draftState, { [propName]: v });
+        }),
+    });
+  }
+
   return {
-    readonlyState,
-    $update,
-    $undo,
     $redo,
-    undos,
+    $undo,
+    $update,
+    $writableProp,
+    readonlyState,
     redos,
+    undos,
   };
 }

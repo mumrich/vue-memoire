@@ -1,16 +1,17 @@
 import {
   computed,
-  triggerRef,
   type WritableComputedRef,
   type ShallowRef,
+  triggerRef,
 } from "vue";
+import { prop } from "./prop-helper";
 
 export function computedShallowRefProp<T extends object>(
   shallowRef: ShallowRef<T>,
   key: keyof T
 ) {
   return computed({
-    get: () => shallowRef.value[key],
+    get: () => prop(shallowRef.value, key),
     set: (v) => {
       shallowRef.value[key] = v;
       triggerRef(shallowRef);
